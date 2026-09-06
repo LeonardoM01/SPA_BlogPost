@@ -15,10 +15,8 @@ export const usePostInteractions = () => {
     
     const handleAddComment = async (postID, text) => {
         if (!text) return
-
         try {
             const response = await http.post(`/comments/post/${postID}`, { text })
-            console.log('Comentário adicionado com sucesso:', response.data)
             return response.data
 
         } catch (error) {
@@ -30,7 +28,6 @@ export const usePostInteractions = () => {
     const handleEditComment = async (commentId, newText) => {
         try {
             const response = await http.patch(`comments/${commentId}`, { text: newText })
-            console.log('Comentário editado com sucesso:', response.data)
             return response.data
             
         } catch (error) {

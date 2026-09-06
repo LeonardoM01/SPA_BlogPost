@@ -4,30 +4,12 @@ import { ThumbsUpButton } from "./ThumbsUpButton"
 import { ModalComment } from "../ModalComment"
 import { Link } from "react-router"
 import { useAuth } from '../../hooks/useAuth'
-import { usePostInteractions } from '../../hooks/usePostInteractions'
-import { useState } from 'react'
+import { usePost } from '../../hooks/usePost'
 
-export const CardPost = ({ post }) => {
-    const { isAuthenticated } = useAuth()
+export const CardPost = ({ post: initialPost }) => {
 
-    const [likes, setLikes] = useState(post.likes)
-    const [comments, setComments] = useState(post.comments)
-
-    const { handleLike, handleAddComment } = usePostInteractions()
-
-    async function handleLikeButton(postID) {
-        if (!isAuthenticated) return
-        const updatedLikes = await handleLike(postID)
-        setLikes(updatedLikes)
-    }
-
-    async function handleAddCommentButton(postID, text) {
-        if (!isAuthenticated) return
-        const newComment = await handleAddComment(postID, text)
-        if (newComment) {
-            setComments(prev => [...prev, newComment])
-        }
-    }
+  const { isAuthenticated } = useAuth();
+  const { post, like, addComment } = usePost(initialPost);
 
     return (
         <article className={styles.card}>
@@ -47,19 +29,19 @@ export const CardPost = ({ post }) => {
             <footer className={styles.footer}>
                 <div className={styles.actions}>
                     <div className={styles.action}>
-                        <ThumbsUpButton loading={false} onClick={() => handleLikeButton(post.id)} disabled={!isAuthenticated} />
+                        <ThumbsUpButton loading={false} onClick={like} disabled={!isAuthenticated} />
                         <p>
-                            {likes}
+                            {post.likes}
                         </p>
                     </div>
                     <div className={styles.action}>
                                 <ModalComment 
                                     postID={post.id}
-                                    onAddComment={handleAddCommentButton} 
+                                    onAddComment={addComment} 
                                     disabled={!isAuthenticated}
                                 />
                         <p>
-                            {comments.length}
+                            {post.comments.length}
                         </p>
                     </div>
                 </div>

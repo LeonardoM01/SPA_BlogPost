@@ -8,78 +8,25 @@ import { useNavigate, useParams } from "react-router"
 import { useEffect, useState } from "react"
 import { ModalComment } from "../../components/ModalComment"
 import { http } from '../../api'
-import { usePostInteractions } from '../../hooks/usePostInteractions'
+import { usePost } from '../../hooks/usePost'
 import { useAuth } from '../../hooks/useAuth'
 
 export const BlogPost = () => {
-    const { slug } = useParams()
-    const [post, setPost] = useState(null)
-    const navigate = useNavigate()
-    const { isAuthenticated } = useAuth()
+  const { slug } = useParams();
+  const navigate = useNavigate();
 
-    const [likes, setLikes] = useState(0)
-    const [comments, setComments] = useState([])
+  const { isAuthenticated } = useAuth();
+  const [initialPost, setInitialPost] = useState(null);
 
-    const { handleLike, handleAddComment, handleEditComment, handleDeleteComment } = usePostInteractions()
+  useEffect(() => {
+    http.get(`blog-posts/slug/${slug}`)
+      .then(res => setInitialPost(res.data))
+      .catch(() => navigate('/not-found'));
+  }, [slug, navigate]);
 
-    async function handleLikeButton(postID) {
-        if (!isAuthenticated) return
-        const updatedLikes = await handleLike(postID)
-        setLikes(updatedLikes)
-    }
+  const { post, like, addComment, editComment, deleteComment } = usePost(initialPost);
 
-    async function handleAddCommentButton(postID, text) {
-        if (!isAuthenticated) return
-        const newComment = await handleAddComment(postID, text)
-        if (newComment) {
-            setComments(prev => [newComment, ...(prev || [])])
-        }
-    }
-
-    async function handleEditCommentButton(commentID, newText) {
-        if (!isAuthenticated) return
-
-        const updatedComment = await handleEditComment(commentID, newText)
-
-        if (updatedComment) {
-            setComments(prevComments =>
-                prevComments.map(comment =>
-                    comment.id === commentID ? updatedComment : comment
-                )
-            )
-        }
-    }
-
-    async function handleDeleteCommentButton(commentID) {
-        if (!isAuthenticated) return
-
-        const isDeleted = await handleDeleteComment(commentID)
-
-        if (isDeleted) {
-            setComments(prevComments =>
-                prevComments.filter(comment => comment.id !== commentID)
-            )
-        }
-    }
-
-    useEffect(() => {
-        const loadPost = async () => {
-            try {
-                const response = await http.get(`blog-posts/slug/${slug}`)
-                setPost(response.data)
-                setLikes(response.data.likes || 0)
-                setComments(response.data.comments || [])
-            } catch (error) {
-                console.error('Erro ao carregar o post:', error)
-                navigate('/not-found')
-            }
-        }
-        loadPost()
-    }, [slug, navigate])
-
-    if (!post) {
-        return null
-    }
+   if (!post) return null;
 
     return (
         <main className={styles.main}>
@@ -99,15 +46,15 @@ export const BlogPost = () => {
                 <footer className={styles.footer}>
                     <div className={styles.actions}>
                         <div className={styles.action}>
-                            <ThumbsUpButton loading={false} onClick={() => handleLikeButton(post.id)} />
+                            <ThumbsUpButton loading={false} onClick={like} />
                             <p>
-                                {likes}
+                                {post.likes}
                             </p>
                         </div>
                         <div className={styles.action}>
-                            <ModalComment onAddComment={handleAddCommentButton} postID={post?.id} disabled={!isAuthenticated} />
+                            <ModalComment onAddComment={addComment} postID={post?.id} disabled={!isAuthenticated} />
                             <p>
-                                {comments.length}
+                                {post.comments.length}
                             </p>
                         </div>
                     </div>
@@ -120,7 +67,7 @@ export const BlogPost = () => {
                     {post.markdown}
                 </ReactMarkdown>
             </div>
-            <CommentList comments={comments} onEdit={handleEditCommentButton} onDelete={handleDeleteCommentButton} />
+            <CommentList comments={post.comments} onEdit={editComment} onDelete={deleteComment} />
         </main>
     )
 }

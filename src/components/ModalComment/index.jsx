@@ -24,7 +24,7 @@ export const ModalComment = ({ isEditing, onAddComment, onEditComment, defaultVa
             if (isEditing) {
                 await onEditComment(commentID, text)
             } else {
-                await onAddComment(postID, text)
+                await onAddComment(text)
             }
             modalRef.current.closeModal()
         } catch (error) {
