@@ -1,9 +1,10 @@
 import styles from './asidelink.module.css'
+import { Link } from "react-router"
 
 const AsideLink = ({ href, children }) => {
-    return (<a href={href} className={styles.asidelink}>
+    return (<Link to={href} className={styles.asidelink}>
         {children}
-    </a>)
+    </Link>)
 }
 
 export default AsideLink

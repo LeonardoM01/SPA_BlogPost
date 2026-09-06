@@ -3,7 +3,6 @@ import { Checkbox } from "../../components/Checkbox"
 import { Input } from "../../components/Input"
 import { Label } from "../../components/Label"
 import Typography from "../../components/Typography"
-import { AuthLayout } from "../../layouts/Auth"
 import { Button } from "../../components/Button"
 import banner from './banner-register.png'
 import { IconArrowFoward } from "../../components/icons/IconArrowFoward"
@@ -14,21 +13,40 @@ import { TextDivider } from "../../components/TextDivider"
 import { Providers } from "../../components/Providers"
 import { Link } from "../../components/Link"
 import styles from './register.module.css'
+import { useAuth } from "../../hooks/useAuth"
+import { useNavigate } from "react-router"
 
 export const Register = () => {
+
+    const { register } = useAuth();
+    const navigate = useNavigate();
+
+    const onSubmit = async (FormData) => {
+        const name = FormData.get('name')
+        const email = FormData.get('email')
+        const password = FormData.get('password')
+
+        const response = await register(name, email, password)
+
+        if (response.success) {
+            navigate('/auth/login')
+        } else {
+            console.error(response.error)
+        }
+    }
+
     return (
-        <AuthLayout>
             <AuthFormContainer bannerSrc={banner}>
                 <Typography variant="h1" color="--offwhite">Cadastro</Typography>
                 <Typography variant="h2" color="--offwhite">Olá! Preencha seus dados.</Typography>
-                <Form action="">
+                <Form action={onSubmit}>
                     <Fieldset>
                         <Label>
                             Nome
                         </Label>
                         <Input
-                            name="nome"
-                            id="nome"
+                            name="name"
+                            id="name"
                             placeholder="Nome completo"
                             required
                         />
@@ -55,7 +73,7 @@ export const Register = () => {
                             type="password"
                             required
                         />
-                        <Checkbox label="Lembrar-me" required />
+                        <Checkbox label="Lembrar-me" />
                     </Fieldset>
                     <Button type="submit">
                         Login <IconArrowFoward />
@@ -69,7 +87,7 @@ export const Register = () => {
                     <Typography variant="body" color="--offwhite">
                         Já tem conta?
                     </Typography>
-                    <Link href='#'>
+                    <Link href='/auth/login'>
                         <Typography variant="body" color="--highlight-green">
                             Faça seu login!
                         </Typography>
@@ -77,6 +95,5 @@ export const Register = () => {
                     </Link>
                 </footer>
             </AuthFormContainer>
-        </AuthLayout>
     )
 }

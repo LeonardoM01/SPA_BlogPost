@@ -1,10 +1,11 @@
 import styles from './link.module.css'
+import { Link as RouterLink } from "react-router"
 
-export const Link = ({ children, ...props }) => {
+export const Link = ({ children, href, ...props }) => {
     const className = props.className || ''
     return (
-        <a {...props} className={`${styles.link} ${className}`}>
+        <RouterLink to={href} {...props} className={`${styles.link} ${className}`}>
             {children}
-        </a>
+        </RouterLink>
     )
 }

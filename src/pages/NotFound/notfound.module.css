@@ -1,0 +1,17 @@
+.title {
+    color: white;
+    font-size: 48px;
+    width: 100%;
+    text-align: center;
+}
+
+.img {
+    display: flex;
+    justify-content: center;
+}
+
+.description {
+    color: white;
+    font-size: 16px;
+    text-align: center;
+}

@@ -1,11 +1,34 @@
-import { Author } from "../Author"
 import styles from './cardpost.module.css'
-
+import { Author } from "../Author"
 import { ThumbsUpButton } from "./ThumbsUpButton"
-import { IconChat } from "../icons/IconChat"
-import { IconButton } from "../IconButton"
+import { ModalComment } from "../ModalComment"
+import { Link } from "react-router"
+import { useAuth } from '../../hooks/useAuth'
+import { usePostInteractions } from '../../hooks/usePostInteractions'
+import { useState } from 'react'
 
 export const CardPost = ({ post }) => {
+    const { isAuthenticated } = useAuth()
+
+    const [likes, setLikes] = useState(post.likes)
+    const [comments, setComments] = useState(post.comments)
+
+    const { handleLike, handleAddComment } = usePostInteractions()
+
+    async function handleLikeButton(postID) {
+        if (!isAuthenticated) return
+        const updatedLikes = await handleLike(postID)
+        setLikes(updatedLikes)
+    }
+
+    async function handleAddCommentButton(postID, text) {
+        if (!isAuthenticated) return
+        const newComment = await handleAddComment(postID, text)
+        if (newComment) {
+            setComments(prev => [...prev, newComment])
+        }
+    }
+
     return (
         <article className={styles.card}>
             <header className={styles.header}>
@@ -19,22 +42,24 @@ export const CardPost = ({ post }) => {
             <section className={styles.body}>
                 <h2>{post.title}</h2>
                 <p>{post.body}</p>
-                <a href="#">Ver detalhes</a>
+                <Link to={`/blog-post/${post.slug}`}>Ver detalhes</Link>
             </section>
             <footer className={styles.footer}>
                 <div className={styles.actions}>
                     <div className={styles.action}>
-                        <ThumbsUpButton loading={false} />
+                        <ThumbsUpButton loading={false} onClick={() => handleLikeButton(post.id)} disabled={!isAuthenticated} />
                         <p>
-                            {post.likes}
+                            {likes}
                         </p>
                     </div>
                     <div className={styles.action}>
-                        <IconButton>
-                            <IconChat />
-                        </IconButton>
+                                <ModalComment 
+                                    postID={post.id}
+                                    onAddComment={handleAddCommentButton} 
+                                    disabled={!isAuthenticated}
+                                />
                         <p>
-                            {post.comments.length}
+                            {comments.length}
                         </p>
                     </div>
                 </div>
